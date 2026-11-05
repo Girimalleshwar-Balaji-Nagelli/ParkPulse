@@ -10,26 +10,27 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.parkpulse.app.presentation.theme.ParksColors
 
 private val ParkPulseColors = lightColorScheme(
-    primary = PrimaryGreen,
-    onPrimary = Black,
-    primaryContainer = BackgroundMint,
-    onPrimaryContainer = DarkGreen,
-    secondary = SecondaryGreen,
-    onSecondary = White,
-    tertiary = DarkGreen,
-    onTertiary = White,
-    background = BackgroundMint,
-    onBackground = Black,
-    surface = White,
-    onSurface = Black,
-    surfaceVariant = White,
-    onSurfaceVariant = SecondaryGreen,
-    outline = SecondaryGreen,
-    outlineVariant = SecondaryGreen,
-    error = ErrorRed,
-    onError = White
+    primary = ParksColors.PrimaryGreen,
+    onPrimary = ParksColors.Black,
+    primaryContainer = ParksColors.BackgroundMint,
+    onPrimaryContainer = ParksColors.DarkGreen,
+    secondary = ParksColors.SecondaryGreen,
+    onSecondary = ParksColors.White,
+    tertiary = ParksColors.DarkGreen,
+    onTertiary = ParksColors.White,
+    background = ParksColors.BackgroundMint,
+    onBackground = ParksColors.Black,
+    surface = ParksColors.White,
+    onSurface = ParksColors.Black,
+    surfaceVariant = ParksColors.White,
+    onSurfaceVariant = ParksColors.SecondaryGreen,
+    outline = ParksColors.SecondaryGreen,
+    outlineVariant = ParksColors.SecondaryGreen,
+    error = ParksColors.ErrorRed,
+    onError = ParksColors.White
 )
 
 private val ParkPulseTypography = Typography(
