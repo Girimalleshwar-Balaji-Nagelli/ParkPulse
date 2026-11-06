@@ -12,3 +12,7 @@ class ObserveParksUseCase @Inject constructor(private val repository: ParkReposi
 class SeedParksUseCase @Inject constructor(private val repository: ParkRepository) {
     suspend operator fun invoke() = repository.seedIfEmpty()
 }
+
+class AddParkUseCase @Inject constructor(private val repository: ParkRepository) {
+    suspend operator fun invoke(park: Park) = repository.addPark(park)
+}

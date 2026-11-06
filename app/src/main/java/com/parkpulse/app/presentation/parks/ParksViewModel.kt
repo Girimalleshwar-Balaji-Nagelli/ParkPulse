@@ -55,4 +55,8 @@ class ParksViewModel @Inject constructor(
     fun onQueryChange(value: String) { query.value = value }
     fun onFilterChange(value: StatusFilter) { filter.value = value }
     fun retry() { reload.value++ }
+    fun clearFilters() {
+        query.value = ""
+        filter.value = StatusFilter.ALL
+    }
 }

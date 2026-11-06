@@ -22,4 +22,8 @@ class ParkRepositoryImpl @Inject constructor(
             dao.insertAll(ParkSeedData.parks.map { it.toEntity() })
         }
     }
+
+    override suspend fun addPark(park: Park) {
+        dao.insert(park.toEntity())
+    }
 }

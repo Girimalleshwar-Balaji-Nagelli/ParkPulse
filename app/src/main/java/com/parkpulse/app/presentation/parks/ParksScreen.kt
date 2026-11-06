@@ -1,10 +1,10 @@
 package com.parkpulse.app.presentation.parks
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +34,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.parkpulse.app.presentation.components.BottomTab
+import com.parkpulse.app.presentation.components.ParkPulseBottomBar
 import com.parkpulse.app.presentation.parks.components.ParkCard
 import com.parkpulse.app.presentation.parks.components.ParkSearchBar
 import com.parkpulse.app.presentation.parks.components.ParkStatusFilter
@@ -41,7 +45,9 @@ import com.parkpulse.app.presentation.theme.ParksColors
 fun ParksScreen(
     modifier: Modifier = Modifier,
     viewModel: ParksViewModel = hiltViewModel(),
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onMapClick: () -> Unit = {},
+    onAddParkClick: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ParksContent(
@@ -50,6 +56,8 @@ fun ParksScreen(
         onFilterChange = viewModel::onFilterChange,
         onRetry = viewModel::retry,
         onProfileClick = onProfileClick,
+        onMapClick = onMapClick,
+        onAddParkClick = onAddParkClick,
         modifier = modifier
     )
 }
@@ -61,9 +69,31 @@ private fun ParksContent(
     onFilterChange: (StatusFilter) -> Unit,
     onRetry: () -> Unit,
     onProfileClick: () -> Unit,
+    onMapClick: () -> Unit,
+    onAddParkClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(modifier = modifier, containerColor = ParksColors.BackgroundMint) { padding ->
+    Scaffold(
+        modifier = modifier,
+        containerColor = ParksColors.BackgroundMint,
+        bottomBar = {
+            ParkPulseBottomBar(
+                selected = BottomTab.LIST,
+                onListClick = {},
+                onMapClick = onMapClick
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddParkClick,
+                shape = CircleShape,
+                containerColor = ParksColors.PrimaryGreen,
+                contentColor = ParksColors.DarkGreen
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add park")
+            }
+        }
+    ) { padding ->
         Column(
             Modifier
                 .fillMaxSize()
@@ -117,7 +147,8 @@ private fun ParksContent(
                     )
                     else -> LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 24.dp)
+                        // Extra bottom space so the FAB never covers the last card.
+                        contentPadding = PaddingValues(bottom = 88.dp)
                     ) {
                         items(state.parks, key = { it.id }) { park -> ParkCard(park) }
                     }

@@ -17,4 +17,7 @@ interface ParkDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(parks: List<ParkEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(park: ParkEntity)
 }

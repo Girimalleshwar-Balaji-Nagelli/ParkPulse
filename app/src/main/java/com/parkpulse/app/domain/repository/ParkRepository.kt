@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface ParkRepository {
     fun observeParks(): Flow<List<Park>>
     suspend fun seedIfEmpty()
+    suspend fun addPark(park: Park)
 }

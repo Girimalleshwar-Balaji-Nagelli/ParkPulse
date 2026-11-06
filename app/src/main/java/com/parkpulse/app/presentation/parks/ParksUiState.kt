@@ -6,7 +6,8 @@ import com.parkpulse.app.domain.model.ParkStatus
 enum class StatusFilter(val label: String, val status: ParkStatus?) {
     ALL("All", null),
     OPEN("Open", ParkStatus.OPEN),
-    NEEDS_REPAIR("Needs repair", ParkStatus.NEEDS_REPAIR),
+//    NEEDS_REPAIR("Needs repair", ParkStatus.NEEDS_REPAIR),
+    NEEDS_REPAIR("Repair", ParkStatus.NEEDS_REPAIR),
     CLOSED("Closed", ParkStatus.CLOSED);
 
     fun matches(parkStatus: ParkStatus) = status == null || status == parkStatus
