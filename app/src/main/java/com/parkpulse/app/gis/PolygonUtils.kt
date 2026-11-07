@@ -3,11 +3,15 @@ package com.parkpulse.app.gis
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.min
 
 object PolygonUtils {
 
     private const val MIN_AREA_SQM = 1.0
     private const val R = DistanceCalculator.EARTH_RADIUS_M
+    private const val EPS = 1e-6
+    const val SQM_PER_ACRE = 4046.8564224
 
     /**
      * Returns an open ring (first point NOT repeated at the end) or null if the
@@ -41,6 +45,40 @@ object PolygonUtils {
         return abs(sum) / 2.0
     }
 
+    fun sqmToAcres(sqm: Double): Double = sqm / SQM_PER_ACRE
+
+    /** Closed perimeter in metres of an OPEN ring (the closing edge is added). */
+    fun perimeterMeters(ring: List<GeoPoint>): Double {
+        if (ring.size < 2) return 0.0
+        var sum = 0.0
+        for (i in ring.indices) {
+            sum += DistanceCalculator.meters(ring[i], ring[(i + 1) % ring.size])
+        }
+        return sum
+    }
+
+    /**
+     * True if any two edges of the OPEN ring cross, touch, or overlap, or if two adjacent
+     * edges fold back onto each other. Edges are tested on a local metre projection.
+     */
+    fun isSelfIntersecting(ring: List<GeoPoint>): Boolean {
+        val n = ring.size
+        if (n < 3) return false
+        val origin = ring[0]
+        val p = ring.map { project(it, origin) }
+        for (i in 0 until n) {
+            val a = p[i]
+            val b = p[(i + 1) % n]
+            val c = p[(i + 2) % n]
+            if (foldsBack(a, b, c)) return true
+            for (j in i + 2 until n) {
+                if (i == 0 && j == n - 1) continue // adjacent via the closing edge
+                if (segmentsIntersect(a, b, p[j], p[(j + 1) % n])) return true
+            }
+        }
+        return false
+    }
+
     /** Ray-casting point-in-polygon. */
     fun contains(ring: List<GeoPoint>, point: GeoPoint): Boolean {
         var inside = false
@@ -49,8 +87,8 @@ object PolygonUtils {
             val pi = ring[i]
             val pj = ring[j]
             val crosses = (pi.latitude > point.latitude) != (pj.latitude > point.latitude) &&
-                point.longitude < (pj.longitude - pi.longitude) * (point.latitude - pi.latitude) /
-                (pj.latitude - pi.latitude) + pi.longitude
+                    point.longitude < (pj.longitude - pi.longitude) * (point.latitude - pi.latitude) /
+                    (pj.latitude - pi.latitude) + pi.longitude
             if (crosses) inside = !inside
             j = i
         }
@@ -102,5 +140,38 @@ object PolygonUtils {
             origin.latitude + Math.toDegrees(y / R),
             origin.longitude + Math.toDegrees(x / (R * cosLat)),
         )
+    }
+
+    private fun orient(a: XY, b: XY, c: XY): Double =
+        (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
+
+    private fun sgn(v: Double): Int = when {
+        v > EPS -> 1
+        v < -EPS -> -1
+        else -> 0
+    }
+
+    private fun onSegment(a: XY, b: XY, c: XY): Boolean =
+        c.x <= max(a.x, b.x) + EPS && c.x >= min(a.x, b.x) - EPS &&
+                c.y <= max(a.y, b.y) + EPS && c.y >= min(a.y, b.y) - EPS
+
+    private fun segmentsIntersect(p1: XY, p2: XY, p3: XY, p4: XY): Boolean {
+        val o1 = sgn(orient(p1, p2, p3))
+        val o2 = sgn(orient(p1, p2, p4))
+        val o3 = sgn(orient(p3, p4, p1))
+        val o4 = sgn(orient(p3, p4, p2))
+        if (o1 != o2 && o3 != o4) return true
+        if (o1 == 0 && onSegment(p1, p2, p3)) return true
+        if (o2 == 0 && onSegment(p1, p2, p4)) return true
+        if (o3 == 0 && onSegment(p3, p4, p1)) return true
+        if (o4 == 0 && onSegment(p3, p4, p2)) return true
+        return false
+    }
+
+    /** Adjacent edges a->b and b->c that run along the same line in opposite directions. */
+    private fun foldsBack(a: XY, b: XY, c: XY): Boolean {
+        val cross = orient(a, b, c)
+        val dot = (b.x - a.x) * (c.x - b.x) + (b.y - a.y) * (c.y - b.y)
+        return sgn(cross) == 0 && dot < 0
     }
 }
