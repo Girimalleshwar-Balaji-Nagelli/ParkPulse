@@ -66,11 +66,20 @@ import kotlin.math.roundToInt
 fun SurveyFormScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit,
-    onAddPhoto: () -> Unit,
-    viewModel: SurveyFormViewModel = hiltViewModel(),
+    onAddPhoto: (surveyId: String) -> Unit,
+    viewModel: SurveyFormViewModel, // = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+
+    // Collect safely using the exposed view model property
+    val newPhotoEncoded by viewModel.newPhotoEncoded.collectAsStateWithLifecycle()
+
+    LaunchedEffect(newPhotoEncoded) {
+        newPhotoEncoded?.let { encoded ->
+            viewModel.consumeNewPhoto(encoded)
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -164,7 +173,7 @@ fun SurveyFormScreen(
                         onRemove = { viewModel.removePhoto(photo.id) },
                     )
                 }
-                if (state.canAddPhoto) AddPhotoTile(onClick = onAddPhoto)
+                if (state.canAddPhoto) AddPhotoTile(onClick = { onAddPhoto(viewModel.surveyId) })
             }
 
             // ---- trees counted  |  Lights: Yes ----

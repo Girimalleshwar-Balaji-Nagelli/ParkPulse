@@ -35,6 +35,8 @@ data class PhotoSyncDto(
     val longitude: Double,
     val accuracyM: Float,
     val sizeBytes: Long,
+    /** SHA-256 of the JPEG bytes; the server recomputes it to detect a corrupted upload. */
+    val sha256: String,
     val createdAtMillis: Long,
 )
 

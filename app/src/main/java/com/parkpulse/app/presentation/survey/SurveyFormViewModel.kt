@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -72,7 +71,8 @@ class SurveyFormViewModel @Inject constructor(
     private val accuracy: Float? = savedStateHandle.get<String>("accuracy")?.toFloatOrNull()
 
     /** One id per form instance: saving twice (double tap) can never create two rows. */
-    private val surveyId = "survey-${UUID.randomUUID()}"
+    val surveyId: String = savedStateHandle.get<String>(KEY_SURVEY_ID)
+        ?: "survey-${UUID.randomUUID()}".also { savedStateHandle[KEY_SURVEY_ID] = it } // survives process death
 
     private val argsValid =
         parkId != null && checkInTime != null && latitude != null && longitude != null && accuracy != null
@@ -96,23 +96,40 @@ class SurveyFormViewModel @Inject constructor(
 
     private var saved = false
 
+    val newPhotoEncoded: StateFlow<String?> =
+        savedStateHandle.getStateFlow(KEY_NEW_PHOTO, null)
+
     init {
         viewModelScope.launch {
             val name = parkRepository.observeParks().first().firstOrNull { it.id == parkId }?.name
             _uiState.update { it.copy(parkName = name ?: "") }
         }
-        // The camera screen hands its result back through this survey screen's saved state.
-        viewModelScope.launch {
-            savedStateHandle.getStateFlow<String?>(KEY_NEW_PHOTO, null).filterNotNull().collect { encoded ->
-                savedStateHandle[KEY_NEW_PHOTO] = null
-                PhotoDraft.decode(encoded)?.let(::addPhoto)
-            }
-        }
     }
 
     fun photoFile(fileName: String): File = photoStorage.fileFor(fileName)
 
+    fun consumeNewPhoto(encoded: String) {
+        try {
+            onPhotoCaptured(encoded)
+        } finally {
+            savedStateHandle[KEY_NEW_PHOTO] = null
+        }
+    }
+    /**
+     * Called by the navigation layer when the camera returns a photo. (The result is read from the
+     * destination's NavBackStackEntry in AppNavigation and forwarded here, so it does not depend on
+     * the ViewModel's SavedStateHandle being the same object as the entry's.)
+     */
+    fun onPhotoCaptured(encoded: String) {
+        PhotoDraft.decode(encoded)?.let(::addPhoto)
+    }
+
     private fun addPhoto(draft: PhotoDraft) {
+        if (draft.surveyId != surveyId) { // a photo taken for some other survey must never be attached here
+            photoStorage.delete(draft.fileName)
+            return
+        }
+        if (_uiState.value.photos.any { it.id == draft.id }) return // same result delivered twice
         if (_uiState.value.photos.size >= MAX_SURVEY_PHOTOS) {
             photoStorage.delete(draft.fileName)
             return
@@ -171,6 +188,17 @@ class SurveyFormViewModel @Inject constructor(
             return
         }
 
+        // A photo whose file vanished can never be uploaded: drop it and ask the user to retake it.
+        val missing = s.photos.filterNot { runCatching { photoStorage.fileFor(it.fileName).isFile }.getOrDefault(false) }
+        if (missing.isNotEmpty()) {
+            _uiState.update { st -> st.copy(photos = st.photos.filterNot { p -> missing.any { it.id == p.id } }) }
+            persistPhotos()
+            viewModelScope.launch {
+                _events.send(SurveyFormEvent.Failed("${missing.size} photo file(s) were missing and were removed. Please retake them."))
+            }
+            return
+        }
+
         val now = System.currentTimeMillis()
         val survey = Survey(
             id = surveyId,
@@ -217,14 +245,15 @@ class SurveyFormViewModel @Inject constructor(
 
     /** Leaving the form without saving discards the draft photo files so they do not pile up. */
     override fun onCleared() {
-        if (!saved) _uiState.value.photos.forEach { photoStorage.delete(it.fileName) }
+        if (!saved) photoStorage.deleteSurveyDir(surveyId)
     }
 
     companion object {
-        const val KEY_NEW_PHOTO = "new_photo"
         private const val KEY_PHOTOS = "draft_photos"
+        private const val KEY_SURVEY_ID = "draft_survey_id"
         private const val MAX_COUNT_DIGITS = 5
         private const val MAX_COUNT = 99_999
         private const val MAX_NOTES = 500
+        const val KEY_NEW_PHOTO = "new_photo"
     }
 }

@@ -65,6 +65,8 @@ class CameraViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val parkId: String = checkNotNull(savedStateHandle.get<String>("parkId"))
+    /** The survey this photo will belong to (created by the survey form, passed as a navigation argument). */
+    private val surveyId: String = checkNotNull(savedStateHandle.get<String>("surveyId"))
 
     private val parkName: StateFlow<String> = parkRepository.observeParks()
         .map { parks -> parks.firstOrNull { it.id == parkId }?.name.orEmpty() }
@@ -178,27 +180,37 @@ class CameraViewModel @Inject constructor(
     fun confirm() {
         val review = phase.value as? CameraPhase.Review ?: return
         phase.value = CameraPhase.Saving
+
         viewModelScope.launch {
             try {
-                val fileName = withContext(Dispatchers.IO) { photoStorage.saveJpeg(review.bitmap) }
-                review.bitmap.recycle()
-                val s = review.stamp
-                _events.send(
-                    CameraEvent.PhotoSaved(
-                        PhotoDraft(
-                            id = "photo-${UUID.randomUUID()}",
-                            fileName = fileName,
-                            takenAtMillis = s.takenAtMillis,
-                            latitude = s.latitude,
-                            longitude = s.longitude,
-                            accuracyM = s.accuracyM,
-                        )
-                    )
+                val photoId = "photo-${UUID.randomUUID()}"
+
+                val fileName = withContext(Dispatchers.IO) {
+                    photoStorage.saveJpeg(surveyId, photoId, review.bitmap)
+                }
+
+                val draft = PhotoDraft(
+                    id = photoId,
+                    surveyId = surveyId,
+                    fileName = fileName,
+                    takenAtMillis = review.stamp.takenAtMillis,
+                    latitude = review.stamp.latitude,
+                    longitude = review.stamp.longitude,
+                    accuracyM = review.stamp.accuracyM,
                 )
+
+                review.bitmap.recycle()
+
+                _events.send(CameraEvent.PhotoSaved(draft))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                phase.value = review // bitmap still valid: let the user retry or retake
+                if (!review.bitmap.isRecycled) {
+                    phase.value = review
+                } else {
+                    phase.value = CameraPhase.Live
+                }
+
                 message.value = "Could not save the photo. Please try again."
             }
         }

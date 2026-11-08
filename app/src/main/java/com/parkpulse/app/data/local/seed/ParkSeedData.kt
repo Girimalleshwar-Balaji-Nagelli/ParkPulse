@@ -67,34 +67,34 @@ object ParkSeedData {
         park(11, "Katraj Lake", LAKEFRONT, 180000.0, "2026-07-11", NEEDS_REPAIR,
             boundary = ParkBoundaries.katrajLake),
 
-        park(12, "Khadakwasla Lakefront", LAKEFRONT, 320000.0, "2026-06-27", CLOSED,
-            boundary = ParkBoundaries.khadakwaslaLakefront, pending = true),
+        park(12, "Gangotri Park", GARDEN, 629.8, "2026-06-27", OPEN,
+            boundary = ParkBoundaries.gangotriPark),
 
-        park(13, "Vetal Tekdi", FOREST_PARK, 1500000.0, "2026-09-19", OPEN,
-            boundary = ParkBoundaries.vetalTekdi),
+        park(13, "Pandit Bhimsen Joshi Udyan", GARDEN, 11554.6, "2026-09-19", OPEN,
+            boundary = ParkBoundaries.panditBhimsenJoshiUdyan),
 
-        park(14, "Taljai Tekdi", FOREST_PARK, 900000.0, "2026-08-22", OPEN,
-            boundary = ParkBoundaries.taljaiTekdi),
+        park(14, "Muredha Nala Park", GARDEN, 21210.5, "2026-08-22", OPEN,
+            boundary = ParkBoundaries.muredhaNalaPark),
 
-        park(15, "ARAI Hill (Hanuman Tekdi)", FOREST_PARK, 700000.0, "2026-07-05", NEEDS_REPAIR,
-            boundary = ParkBoundaries.araiHill),
+        park(15, "Vamanrao Dahanukar Udyan", GARDEN, 2470.7, "2026-07-05", NEEDS_REPAIR,
+            boundary = ParkBoundaries.vamanraoDahanukarUdyan),
 
-        park(16, "Pashan-Sus Biodiversity Park", FOREST_PARK, 400000.0, "2026-10-08", OPEN,
-            boundary = ParkBoundaries.pashanSusPark),
+        park(16, "Rajiv Gandhi Park", GARDEN, 11229.9, "2026-10-08", OPEN,
+            boundary = ParkBoundaries.rajivGandhiPark),
 
-        park(17, "Bhamburda Van Udyan", FOREST_PARK, 600000.0, "2026-05-30", CLOSED,
-            boundary = ParkBoundaries.bhamburdaVanUdyan),
+        park(17, "Rani Lakshmibai Udyan", GARDEN, 2830.2, "2026-05-30", OPEN,
+            boundary = ParkBoundaries.raniLakshmibaiUdyan),
 
-        park(18, "Parvati Hill", FOREST_PARK, 250000.0, "2026-09-07", OPEN,
-            boundary = ParkBoundaries.parvatiHill),
+        park(18, "Ramabai Ambedkar Udyan", GARDEN, 14355.2, "2026-09-07", OPEN,
+            boundary = ParkBoundaries.ramabaiAmbedkarUdyan),
 
-        park(19, "Baner Hill", FOREST_PARK, 800000.0, "2026-08-11", NEEDS_REPAIR,
-            boundary = ParkBoundaries.banerHill),
+        park(19, "Rose Garden", GARDEN, 2564.9, "2026-08-11", NEEDS_REPAIR,
+            boundary = ParkBoundaries.roseGarden),
 
-        park(20, "Rajiv Gandhi Udyan (Katraj)", GARDEN, 130000.0, "2026-10-14", OPEN,
-            boundary = ParkBoundaries.rajivGandhiUdyan),
+        park(20, "Swami Vivekanand Udyaan", GARDEN, 7611.3, "2026-10-14", OPEN,
+            boundary = ParkBoundaries.swamiVivekanandUdyaan),
 
-        park(21, "Shaniwar Wada Lawns", GARDEN, 11000.0, "2026-06-02", OPEN,
-            boundary = ParkBoundaries.shaniwarWadaLawns)
+        park(21, "Lumbini Garden", GARDEN, 9654.2, "2026-06-02", OPEN,
+            boundary = ParkBoundaries.lumbiniGarden)
     )
 }

@@ -38,6 +38,7 @@ import com.parkpulse.app.presentation.parks.ParksScreen
 import com.parkpulse.app.presentation.parks.ParksViewModel
 import com.parkpulse.app.presentation.survey.CheckInScreen
 import com.parkpulse.app.presentation.survey.SurveyFormScreen
+import com.parkpulse.app.presentation.survey.SurveyFormViewModel
 import com.parkpulse.app.presentation.survey.SurveyParkListScreen
 import com.parkpulse.app.presentation.sync.SyncStatusPill
 import com.parkpulse.app.presentation.theme.ParksColors
@@ -56,11 +57,11 @@ object Routes {
     const val SURVEY_SELECT = "survey_select"
     const val CHECK_IN = "check_in/{parkId}"
     const val SURVEY_FORM = "survey_form/{parkId}/{checkInTime}/{lat}/{lng}/{accuracy}"
-    const val CAMERA = "camera/{parkId}"
+    const val CAMERA = "camera/{parkId}/{surveyId}"
 
     fun checkIn(parkId: String) = "check_in/$parkId"
 
-    fun camera(parkId: String) = "camera/$parkId"
+    fun camera(parkId: String, surveyId: String) = "camera/$parkId/$surveyId"
 
     fun surveyForm(parkId: String, checkInTime: Long, lat: Double, lng: Double, accuracyM: Float) =
         "survey_form/$parkId/$checkInTime/$lat/$lng/$accuracyM"
@@ -196,23 +197,40 @@ fun AppNavigation(viewModel: AppViewModel = hiltViewModel()) {
                 ),
             ) { entry ->
                 val parkId = entry.arguments?.getString("parkId").orEmpty()
+
+                // Explicitly scope the ViewModel to this specific NavBackStackEntry
+                // Fix: Scope the ViewModel to the NavHost graph directly so it survives the camera transition perfectly
+                val surveyViewModel: SurveyFormViewModel = hiltViewModel(
+                    viewModelStoreOwner = entry
+                )
+
                 SurveyFormScreen(
+                    viewModel = surveyViewModel,
                     onBack = { navController.popBackStack() },
                     onSaved = { navController.popBackStack(Routes.PARKS, inclusive = false) },
-                    onAddPhoto = { navController.navigate(Routes.camera(parkId)) { launchSingleTop = true } },
+                    onAddPhoto = { surveyId -> navController.navigate(Routes.camera(parkId, surveyId)) { launchSingleTop = true } },
                 )
             }
             composable(
                 route = Routes.CAMERA,
-                arguments = listOf(navArgument("parkId") { type = NavType.StringType }),
+                arguments = listOf(
+                    navArgument("parkId") { type = NavType.StringType },
+                    navArgument("surveyId") { type = NavType.StringType },
+                ),
             ) {
                 CameraScreen(
-                    onBack = { navController.popBackStack() },
-                    onPhotoConfirmed = { encoded ->
-                        // Hand the photo to the survey form underneath, then close the camera.
-                        navController.previousBackStackEntry?.savedStateHandle?.set("new_photo", encoded)
+                    onBack = {
                         navController.popBackStack()
                     },
+                    onPhotoConfirmed = { encodedDraft ->
+                        // Look up the exact survey form destination anywhere in the backstack
+                        navController.getBackStackEntry(Routes.SURVEY_FORM).savedStateHandle.set(
+                            SurveyFormViewModel.KEY_NEW_PHOTO,
+                            encodedDraft
+                        )
+
+                        navController.popBackStack()
+                    }
                 )
             }
         }

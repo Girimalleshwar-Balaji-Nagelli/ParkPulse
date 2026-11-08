@@ -317,34 +317,156 @@ object ParkBoundaries {
         LatLng(18.4568426, 73.8617870)
     )
 
-    // No confidently matching polygon found in this export for Khadakwasla Lakefront.
-    val khadakwaslaLakefront: List<LatLng>? = null
+    // Gangotri Park — OSM relation/6922953
+    val gangotriPark: List<LatLng> = listOf(
+        LatLng(18.5117885, 73.7789835),
+        LatLng(18.5119726, 73.7789184),
+        LatLng(18.5120048, 73.7789149),
+        LatLng(18.5120339, 73.7789000),
+        LatLng(18.5120564, 73.7788755),
+        LatLng(18.5120696, 73.7788443),
+        LatLng(18.5120720, 73.7788103),
+        LatLng(18.5120632, 73.7787775),
+        LatLng(18.5120443, 73.7787498),
+        LatLng(18.5120176, 73.7787306),
+        LatLng(18.5119898, 73.7787225),
+        LatLng(18.5119609, 73.7787237),
+        LatLng(18.5119338, 73.7787343),
+        LatLng(18.5119110, 73.7787531),
+        LatLng(18.5117572, 73.7788054),
+        LatLng(18.5117634, 73.7788601),
+        LatLng(18.5117679, 73.7788994),
+        LatLng(18.5117692, 73.7789186),
+        LatLng(18.5117836, 73.7789421),
+        LatLng(18.5117885, 73.7789835)
+    )
 
-    // No confidently matching polygon found in this export for Vetal Tekdi.
-    val vetalTekdi: List<LatLng>? = null
+    // Pandit Bhimsen Joshi Udyan — OSM relation/20628919
+    val panditBhimsenJoshiUdyan: List<LatLng> = listOf(
+        LatLng(18.5119084, 73.7909217),
+        LatLng(18.5118912, 73.7908842),
+        LatLng(18.5118578, 73.7908754),
+        LatLng(18.5108027, 73.7910794),
+        LatLng(18.5107816, 73.7908366),
+        LatLng(18.5103806, 73.7908404),
+        LatLng(18.5103528, 73.7908695),
+        LatLng(18.5103516, 73.7909029),
+        LatLng(18.5105562, 73.7911376),
+        LatLng(18.5101040, 73.7915720),
+        LatLng(18.5101260, 73.7915950),
+        LatLng(18.5119733, 73.7915186),
+        LatLng(18.5120027, 73.7915109),
+        LatLng(18.5120204, 73.7914720),
+        LatLng(18.5120175, 73.7914160),
+        LatLng(18.5119084, 73.7909217)
+    )
 
-    // No confidently matching polygon found in this export for Taljai Tekdi.
-    val taljaiTekdi: List<LatLng>? = null
+    // Muredha Nala Park — OSM way/53153289
+    val muredhaNalaPark: List<LatLng> = listOf(
+        LatLng(18.5134541, 73.8859549),
+        LatLng(18.5128903, 73.8859664),
+        LatLng(18.5124556, 73.8861216),
+        LatLng(18.5121097, 73.8861645),
+        LatLng(18.5117129, 73.8861001),
+        LatLng(18.5111839, 73.8860787),
+        LatLng(18.5102554, 73.8860848),
+        LatLng(18.5101926, 73.8867278),
+        LatLng(18.5114688, 73.8866902),
+        LatLng(18.5118150, 73.8866065),
+        LatLng(18.5119565, 73.8865143),
+        LatLng(18.5122302, 73.8865028),
+        LatLng(18.5124888, 73.8865404),
+        LatLng(18.5126591, 73.8866366),
+        LatLng(18.5131017, 73.8868171),
+        LatLng(18.5133284, 73.8863798),
+        LatLng(18.5133844, 73.8862077),
+        LatLng(18.5134541, 73.8859549)
+    )
 
-    // No confidently matching polygon found in this export for ARAI Hill.
-    val araiHill: List<LatLng>? = null
+    // Vamanrao Dahanukar Udyan — OSM way/60980977
+    val vamanraoDahanukarUdyan: List<LatLng> = listOf(
+        LatLng(18.4951059, 73.8117043),
+        LatLng(18.4951027, 73.8117904),
+        LatLng(18.4951255, 73.8118732),
+        LatLng(18.4951720, 73.8119441),
+        LatLng(18.4952415, 73.8119981),
+        LatLng(18.4953241, 73.8120245),
+        LatLng(18.4954103, 73.8120203),
+        LatLng(18.4954903, 73.8119860),
+        LatLng(18.4955548, 73.8119256),
+        LatLng(18.4955965, 73.8118459),
+        LatLng(18.4956106, 73.8117560),
+        LatLng(18.4955955, 73.8116664),
+        LatLng(18.4955528, 73.8115873),
+        LatLng(18.4954915, 73.8115303),
+        LatLng(18.4954163, 73.8114966),
+        LatLng(18.4953348, 73.8114898),
+        LatLng(18.4952554, 73.8115106),
+        LatLng(18.4951864, 73.8115568),
+        LatLng(18.4951347, 73.8116236),
+        LatLng(18.4951059, 73.8117043)
+    )
 
-    // No confidently matching polygon found in this export for Pashan-Sus Biodiversity Park.
-    val pashanSusPark: List<LatLng>? = null
+    // Rajiv Gandhi Park — OSM way/60986757
+    val rajivGandhiPark: List<LatLng> = listOf(
+        LatLng(18.5542073, 73.8638156),
+        LatLng(18.5537852, 73.8639605),
+        LatLng(18.5538246, 73.8642300),
+        LatLng(18.5543294, 73.8661331),
+        LatLng(18.5547210, 73.8659882),
+        LatLng(18.5543751, 73.8648885),
+        LatLng(18.5544158, 73.8643950),
+        LatLng(18.5542073, 73.8638156)
+    )
 
-    // No confidently matching polygon found in this export for Bhamburda Van Udyan.
-    val bhamburdaVanUdyan: List<LatLng>? = null
+    // Rani Lakshmibai Udyan — OSM way/106358086
+    val raniLakshmibaiUdyan: List<LatLng> = listOf(
+        LatLng(18.5128398, 73.8794471),
+        LatLng(18.5128637, 73.8798499),
+        LatLng(18.5133490, 73.8798226),
+        LatLng(18.5134889, 73.8797436),
+        LatLng(18.5134811, 73.8794994),
+        LatLng(18.5134792, 73.8794381),
+        LatLng(18.5128398, 73.8794471)
+    )
 
-    // No confidently matching polygon found in this export for Parvati Hill.
-    val parvatiHill: List<LatLng>? = null
+    // Ramabai Ambedkar Udyan — OSM way/108557629
+    val ramabaiAmbedkarUdyan: List<LatLng> = listOf(
+        LatLng(18.5316954, 73.8774025),
+        LatLng(18.5322548, 73.8788777),
+        LatLng(18.5331675, 73.8787939),
+        LatLng(18.5332731, 73.8785627),
+        LatLng(18.5321970, 73.8774062),
+        LatLng(18.5316954, 73.8774025)
+    )
 
-    // No confidently matching polygon found in this export for Baner Hill.
-    val banerHill: List<LatLng>? = null
+    // Rose Garden — OSM way/109714189
+    val roseGarden: List<LatLng> = listOf(
+        LatLng(18.4878688, 73.8475714),
+        LatLng(18.4874972, 73.8472946),
+        LatLng(18.4872333, 73.8476884),
+        LatLng(18.4876049, 73.8479653),
+        LatLng(18.4878688, 73.8475714)
+    )
 
-    // No confidently matching polygon found in this export for Rajiv Gandhi Udyan (Katraj).
-    val rajivGandhiUdyan: List<LatLng>? = null
+    // Swami Vivekanand Udyaan — OSM way/120009678
+    val swamiVivekanandUdyaan: List<LatLng> = listOf(
+        LatLng(18.4600492, 73.8797965),
+        LatLng(18.4592576, 73.8799663),
+        LatLng(18.4594084, 73.8807817),
+        LatLng(18.4602128, 73.8805296),
+        LatLng(18.4600492, 73.8797965)
+    )
 
-    // No confidently matching polygon found in this export for Shaniwar Wada Lawns.
-    val shaniwarWadaLawns: List<LatLng>? = null
-
+    // Lumbini Garden — OSM way/121807061
+    val lumbiniGarden: List<LatLng> = listOf(
+        LatLng(18.5608067, 73.8957917),
+        LatLng(18.5605829, 73.8964837),
+        LatLng(18.5609135, 73.8966393),
+        LatLng(18.5608575, 73.8967680),
+        LatLng(18.5614017, 73.8970577),
+        LatLng(18.5617765, 73.8963209),
+        LatLng(18.5613712, 73.8960785),
+        LatLng(18.5608067, 73.8957917)
+    )
 }

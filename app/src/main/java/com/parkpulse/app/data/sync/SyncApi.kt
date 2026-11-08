@@ -8,5 +8,6 @@ package com.parkpulse.app.data.sync
 interface SyncApi {
     suspend fun upsertPark(park: ParkSyncDto)
     suspend fun upsertSurvey(survey: SurveySyncDto)
-    suspend fun upsertPhoto(photo: PhotoSyncDto)
+    /** Uploads the JPEG [bytes] together with its metadata. Rejected unless the parent survey exists on the server. */
+    suspend fun upsertPhoto(photo: PhotoSyncDto, bytes: ByteArray)
 }
