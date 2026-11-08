@@ -21,10 +21,13 @@ import javax.inject.Singleton
 
 @Singleton
 class SyncManager @Inject constructor(
-    private val sources: Set<@JvmSuppressWildcards SyncSource>,
+    sources: Set<@JvmSuppressWildcards SyncSource>,
     network: NetworkMonitor,
 ) {
     private enum class RunResult { SUCCESS, FAILED, BUSY }
+
+    /** Parents first (parks before surveys). */
+    private val orderedSources: List<SyncSource> = sources.sortedBy { it.syncOrder }
 
     // Own scope: a sync keeps running if the user leaves the screen that started it.
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -37,7 +40,7 @@ class SyncManager @Inject constructor(
         network.isOnline.distinctUntilChanged().stateIn(scope, SharingStarted.Eagerly, false)
 
     val pendingCount: Flow<Int> =
-        combine(sources.map { it.observePendingCount() }) { counts -> counts.sum() }
+        combine(orderedSources.map { it.observePendingCount() }) { counts -> counts.sum() }
 
     init {
         // Connectivity (re)gained -> sync automatically, with limited backoff retries.
@@ -46,7 +49,7 @@ class SyncManager @Inject constructor(
         }
     }
 
-    /** Manual "Sync Now". Fire-and-forget; observe [state]. */
+    /** Manual "Sync now". Fire-and-forget; observe [state]. */
     fun requestSync() {
         scope.launch { runSync() }
     }
@@ -64,7 +67,7 @@ class SyncManager @Inject constructor(
         }
     }
 
-    private suspend fun pendingNow(): Int = sources.sumOf { it.pendingCountNow() }
+    private suspend fun pendingNow(): Int = orderedSources.sumOf { it.pendingCountNow() }
 
     private suspend fun runSync(): RunResult {
         if (!runLock.tryLock()) return RunResult.BUSY // never two syncs at once
@@ -84,16 +87,15 @@ class SyncManager @Inject constructor(
 
             _state.value = SyncState.Running(0, total)
             var done = 0
-            var remaining = 0
             var error: String? = null
-            for (source in sources) {
+            for (source in orderedSources) {
                 val outcome = source.pushPending {
                     done++
                     _state.value = SyncState.Running(done, total)
                 }
                 if (outcome.error != null) {
-                    remaining += outcome.failed
-                    if (error == null) error = "${source.label}: ${outcome.error}"
+                    error = "${source.label}: ${outcome.error}"
+                    break // later sources may depend on this one (surveys need their park on the server)
                 }
             }
 
@@ -101,7 +103,7 @@ class SyncManager @Inject constructor(
                 _state.value = SyncState.Success(done, System.currentTimeMillis())
                 RunResult.SUCCESS
             } else {
-                _state.value = SyncState.Failed(error, remaining)
+                _state.value = SyncState.Failed(error, pendingNow())
                 RunResult.FAILED
             }
         } catch (e: CancellationException) {

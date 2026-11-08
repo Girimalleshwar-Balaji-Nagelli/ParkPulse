@@ -2,29 +2,68 @@ package com.parkpulse.app.data.local.converter
 
 import androidx.room.TypeConverter
 import com.parkpulse.app.domain.model.LatLng
+import com.parkpulse.app.domain.model.ParkStatus
+import com.parkpulse.app.domain.model.ParkType
+import com.parkpulse.app.domain.model.SyncStatus
 import org.json.JSONArray
 import java.time.LocalDate
 
 class Converters {
-    @TypeConverter
-    fun boundaryToJson(boundary: List<LatLng>?): String? = boundary?.let { points ->
-        JSONArray().also { arr ->
-            points.forEach { arr.put(JSONArray().put(it.latitude).put(it.longitude)) }
-        }.toString()
-    }
 
     @TypeConverter
-    fun jsonToBoundary(json: String?): List<LatLng>? = json?.let {
-        val arr = JSONArray(it)
-        List(arr.length()) { i ->
-            val p = arr.getJSONArray(i)
-            LatLng(p.getDouble(0), p.getDouble(1))
+    fun boundaryToJson(boundary: List<LatLng>?): String? {
+        return boundary?.let { points ->
+            JSONArray().apply {
+                points.forEach { point ->
+                    put(
+                        JSONArray()
+                            .put(point.latitude)
+                            .put(point.longitude)
+                    )
+                }
+            }.toString()
         }
     }
 
     @TypeConverter
-    fun dateToString(date: LocalDate): String = date.toString()
+    fun jsonToBoundary(json: String?): List<LatLng>? {
+        return json?.let {
+            val array = JSONArray(it)
+            List(array.length()) { index ->
+                val point = array.getJSONArray(index)
+                LatLng(
+                    point.getDouble(0),
+                    point.getDouble(1)
+                )
+            }
+        }
+    }
 
     @TypeConverter
-    fun stringToDate(value: String): LocalDate = LocalDate.parse(value)
+    fun dateToString(date: LocalDate?): String? = date?.toString()
+
+    @TypeConverter
+    fun stringToDate(value: String?): LocalDate? =
+        value?.let { LocalDate.parse(it) }
+
+    @TypeConverter
+    fun parkTypeToString(value: ParkType): String = value.name
+
+    @TypeConverter
+    fun stringToParkType(value: String): ParkType =
+        ParkType.valueOf(value)
+
+    @TypeConverter
+    fun parkStatusToString(value: ParkStatus): String = value.name
+
+    @TypeConverter
+    fun stringToParkStatus(value: String): ParkStatus =
+        ParkStatus.valueOf(value)
+
+    @TypeConverter
+    fun syncStatusToString(value: SyncStatus): String = value.name
+
+    @TypeConverter
+    fun stringToSyncStatus(value: String): SyncStatus =
+        SyncStatus.valueOf(value)
 }

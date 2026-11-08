@@ -15,6 +15,7 @@ class ParkSyncSource @Inject constructor(
 ) : SyncSource {
 
     override val label = "Parks"
+    override val syncOrder = 10 // parks before surveys
 
     override fun observePendingCount(): Flow<Int> = dao.observeCountBySyncStatus(SyncStatus.PENDING)
 

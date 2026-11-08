@@ -7,4 +7,6 @@ package com.parkpulse.app.data.sync
  */
 interface SyncApi {
     suspend fun upsertPark(park: ParkSyncDto)
+    suspend fun upsertSurvey(survey: SurveySyncDto)
+    suspend fun upsertPhoto(photo: PhotoSyncDto)
 }

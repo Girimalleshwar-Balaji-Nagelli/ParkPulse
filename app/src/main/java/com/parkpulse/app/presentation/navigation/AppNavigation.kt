@@ -1,11 +1,16 @@
 package com.parkpulse.app.presentation.navigation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,18 +22,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.parkpulse.app.domain.repository.AuthRepository
 import com.parkpulse.app.presentation.auth.LoginScreen
+import com.parkpulse.app.presentation.camera.CameraScreen
 import com.parkpulse.app.presentation.createpark.CreateParkScreen
 import com.parkpulse.app.presentation.home.HomeScreen
 import com.parkpulse.app.presentation.map.MapScreen
 import com.parkpulse.app.presentation.parks.ParksScreen
 import com.parkpulse.app.presentation.parks.ParksViewModel
+import com.parkpulse.app.presentation.survey.CheckInScreen
+import com.parkpulse.app.presentation.survey.SurveyFormScreen
+import com.parkpulse.app.presentation.survey.SurveyParkListScreen
 import com.parkpulse.app.presentation.sync.SyncStatusPill
+import com.parkpulse.app.presentation.theme.ParksColors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -40,6 +52,18 @@ object Routes {
     const val PARKS = "parks"
     const val MAP = "map"
     const val ADD_PARK = "add_park"
+
+    const val SURVEY_SELECT = "survey_select"
+    const val CHECK_IN = "check_in/{parkId}"
+    const val SURVEY_FORM = "survey_form/{parkId}/{checkInTime}/{lat}/{lng}/{accuracy}"
+    const val CAMERA = "camera/{parkId}"
+
+    fun checkIn(parkId: String) = "check_in/$parkId"
+
+    fun camera(parkId: String) = "camera/$parkId"
+
+    fun surveyForm(parkId: String, checkInTime: Long, lat: Double, lng: Double, accuracyM: Float) =
+        "survey_form/$parkId/$checkInTime/$lat/$lng/$accuracyM"
 }
 
 private const val KEY_PARK_ADDED = "park_added"
@@ -76,7 +100,7 @@ fun AppNavigation(viewModel: AppViewModel = hiltViewModel()) {
 
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-    val showSyncPill = currentRoute == Routes.PARKS || currentRoute == Routes.MAP
+    val showOverlay = currentRoute == Routes.PARKS || currentRoute == Routes.MAP
 
     Box(Modifier.fillMaxSize()) {
         NavHost(navController = navController, startDestination = startDestination) {
@@ -134,15 +158,84 @@ fun AppNavigation(viewModel: AppViewModel = hiltViewModel()) {
                     }
                 )
             }
+
+            // ---- Survey flow: select park -> check in (geofence + GPS accuracy) -> survey form ----
+            composable(Routes.SURVEY_SELECT) {
+                SurveyParkListScreen(
+                    onBack = { navController.popBackStack() },
+                    onParkSelected = { parkId ->
+                        navController.navigate(Routes.checkIn(parkId)) { launchSingleTop = true }
+                    }
+                )
+            }
+            composable(
+                route = Routes.CHECK_IN,
+                arguments = listOf(navArgument("parkId") { type = NavType.StringType }),
+            ) {
+                CheckInScreen(
+                    onBack = { navController.popBackStack() },
+                    onCheckedIn = { e ->
+                        navController.navigate(
+                            Routes.surveyForm(e.parkId, e.timeMillis, e.latitude, e.longitude, e.accuracyM)
+                        ) {
+                            // Back from the form returns to park selection, not to a stale check-in.
+                            popUpTo(Routes.CHECK_IN) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+            composable(
+                route = Routes.SURVEY_FORM,
+                arguments = listOf(
+                    navArgument("parkId") { type = NavType.StringType },
+                    navArgument("checkInTime") { type = NavType.LongType },
+                    navArgument("lat") { type = NavType.StringType },
+                    navArgument("lng") { type = NavType.StringType },
+                    navArgument("accuracy") { type = NavType.StringType },
+                ),
+            ) { entry ->
+                val parkId = entry.arguments?.getString("parkId").orEmpty()
+                SurveyFormScreen(
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack(Routes.PARKS, inclusive = false) },
+                    onAddPhoto = { navController.navigate(Routes.camera(parkId)) { launchSingleTop = true } },
+                )
+            }
+            composable(
+                route = Routes.CAMERA,
+                arguments = listOf(navArgument("parkId") { type = NavType.StringType }),
+            ) {
+                CameraScreen(
+                    onBack = { navController.popBackStack() },
+                    onPhotoConfirmed = { encoded ->
+                        // Hand the photo to the survey form underneath, then close the camera.
+                        navController.previousBackStackEntry?.savedStateHandle?.set("new_photo", encoded)
+                        navController.popBackStack()
+                    },
+                )
+            }
         }
-        if (showSyncPill) {
-            // 88.dp keeps the pill above the bottom navigation bar; adjust if your bar height differs.
-            SyncStatusPill(
+
+        if (showOverlay) {
+            // 88.dp keeps these above the bottom navigation bar; adjust if your bar height differs.
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .navigationBarsPadding()
-                    .padding(bottom = 88.dp)
-            )
+                    .padding(bottom = 88.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Button(
+                    onClick = { navController.navigate(Routes.SURVEY_SELECT) { launchSingleTop = true } },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ParksColors.PrimaryGreen,
+                        contentColor = ParksColors.DarkGreen,
+                    ),
+                ) { Text("Start survey") }
+                SyncStatusPill()
+            }
         }
     }
 }

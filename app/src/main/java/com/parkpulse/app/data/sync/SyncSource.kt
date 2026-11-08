@@ -3,11 +3,15 @@ package com.parkpulse.app.data.sync
 import kotlinx.coroutines.flow.Flow
 
 /**
- * One syncable record type. Parks implement it today; surveys and photo records plug in by
+ * One syncable record type. Parks and surveys implement it; photo records plug in the same way by
  * adding another implementation bound @IntoSet in SyncModule. SyncManager needs no changes.
  */
 interface SyncSource {
     val label: String
+
+    /** Lower runs first. Parents must sync before the records that reference them. */
+    val syncOrder: Int get() = 100
+
     fun observePendingCount(): Flow<Int>
     suspend fun pendingCountNow(): Int
 
